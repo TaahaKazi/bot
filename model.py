@@ -2,8 +2,11 @@ from typing import Any, Dict
 import os
 import openai
 openai.api_key = os.environ.get('OPENAI_API_KEY', None)
-
-from prompts import FewShotPrompt, SimpleTemplatePrompt
+import json
+key_lookup = json.load(open('open_ai_key.json'))
+openai.api_key = key_lookup['key']
+from openai import OpenAI
+from model.bot.prompts import FewShotPrompt, SimpleTemplatePrompt
 
 class SimplePromptedLLM:
     def __init__(self, model, tokenizer, type='seq2seq'):
@@ -56,20 +59,24 @@ class FewShotOpenAILLM(FewShotPromptedLLM):
             model=self.model_name,
             prompt=text,
             temperature=0,
+            max_tokens=2000,
         )
         return completion.choices[0].text
 
 
 class FewShotOpenAIChatLLM(FewShotOpenAILLM):
     def _predict(self, text, **kwargs):
-        completion = openai.ChatCompletion.create(
+        completion = OpenAI(api_key=openai.api_key).completions.create(
             model=self.model_name,
-            messages=[
-                {"role": "user", "content": text}
-            ],
+            # messages=[
+            #    {"role": "user", "content": text}
+            #],
+            prompt=text,
             temperature=0,
+            max_tokens=2000,
             )
-        return completion.choices[0].message["content"]
+        ans = completion.choices[0].text[1:]
+        return ans
 
 
 class ZeroShotOpenAILLM(SimplePromptedLLM):
@@ -78,29 +85,34 @@ class ZeroShotOpenAILLM(SimplePromptedLLM):
         self.model_name = model_name
 
     def _predict(self, text, **kwargs):
-        completion = openai.Completion.create(
+        completion = OpenAI(api_key=openai.api_key).completions.create(
             model=self.model_name,
+            # messages=[
+            #    {"role": "user", "content": text}
+            # ],
             prompt=text,
             temperature=0,
+            max_tokens=2000,
         )
-        return completion.choices[0].text
+        ans = completion.choices[0].text.split('\n')[0][1:]
+        return ans
 
 
 class ZeroShotOpenAIChatLLM(ZeroShotOpenAILLM):
     def _predict(self, text, **kwargs):
-        try:
 
-            completion = openai.ChatCompletion.create(
-                model=self.model_name,
-                messages=[
-                 #  {"role": "system", "content": prefix},
-                    {"role": "user", "content": text}
-                ],
-                temperature=0,
-                )
-            return completion.choices[0].message["content"]
-        except:
-            return ""
+        key = openai.api_key
+        completion = OpenAI(api_key=key).completions.create(
+            model=self.model_name,
+            # messages=[
+            #    {"role": "user", "content": text}
+            # ],
+            prompt=text,
+            temperature=0,
+            max_tokens=2000,
+        )
+        ans = completion.choices[0].text[1:]
+        return ans
 
 
 class FewShotAlpaca(FewShotPromptedLLM):

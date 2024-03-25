@@ -1,7 +1,7 @@
 from datasets import load_dataset
 from collections import defaultdict
 from typing import Dict, List
-from database import MultiWOZDatabase
+from model.bot.database import MultiWOZDatabase
 
 
 def load_mwoz(database_path, context_size, split='train', total=10, shuffle=True, available_domains=None, only_single_domain=False, restrict_domains=None):

@@ -27,7 +27,7 @@ from definitions import MW_FEW_SHOT_DOMAIN_DEFINITIONS, MW_ZERO_SHOT_DOMAIN_DEFI
 
 from database import MultiWOZDatabase
 from utils import parse_state, ExampleRetriever, ExampleFormatter, print_gpu_utilization, SGDEvaluator
-from mwzeval.metrics import Evaluator as MWEvaluator
+
 
 
 logger = logging.getLogger(__name__)
@@ -85,9 +85,6 @@ if __name__ == "__main__":
     else:
         model_name = 'GPT3.5'
     if args.from_wandb_id is None:
-        # wandb.init(project='llmbot', entity='hlava', config=config, settings=wandb.Settings(start_method="fork"))
-        # wandb.run.name = f'{args.run_name}-{args.dataset}-{model_name}-examples-{args.num_examples}-ctx-{args.context_size}'
-        # report_table = wandb.Table(columns=['id', 'context', 'raw_state', 'parsed_state', 'response', 'predicted_domain', 'domain'])
         wandb_run = None
 
         if args.model_name.startswith("text-"):
@@ -125,6 +122,7 @@ if __name__ == "__main__":
 
     else:
         wandb_run = wandb.init(project="llmbot", entity='hlava', id=args.from_wandb_id)
+
     with open(args.faiss_db, 'rb') as f:
         faiss_vs = pickle.load(f)
     with open(args.ontology, 'r') as f:
@@ -133,13 +131,12 @@ if __name__ == "__main__":
         domain_prompt = multiwoz_domain_prompt
         database = MultiWOZDatabase(args.database_path)
         state_vs = faiss_vs
-        #with open('multiwoz-state-update-1turn-only-ctx2.vec', 'rb') as f:
-         #   state_vs = pickle.load(f)
         delex_dic = prepareSlotValuesIndependent(args.database_path)
     else:
         domain_prompt = sgd_domain_prompt
         state_vs = faiss_vs
         delex_dic = None
+
     example_retriever = ExampleRetriever(faiss_vs)
     state_retriever = ExampleRetriever(state_vs)
     example_formatter = ExampleFormatter(ontology=ontology)
@@ -155,26 +152,12 @@ if __name__ == "__main__":
             load_mwoz(args.database_path, args.context_size, split=args.split, total=total, shuffle=False, only_single_domain=args.single_domain, restrict_domains=args.restrict_domains.split(",") if args.restrict_domains is not None else None)
     else:
         data_gen = load_sgd(args.context_size, split=args.split, total=total, shuffle=True, only_single_domain=args.single_domain, restrict_domains=args.restrict_domains.split(",") if args.restrict_domains is not None else None)
-    tn = 0
-    progress_bar = tqdm.tqdm(total=total)
-    if wandb_run is not None:
-        api = wandb.Api()
-        art = api.artifact(f"hlava/llmbot/run-{args.from_wandb_id}-examples:v0")
-        predictions_table = art.get("examples").data
-        predictions_table = {dial_id: {"context": ctx,
-                                       "raw_state": rs,
-                                       "domain": dom,
-                                       "predicted_domain": pred_dom,
-                                       "parsed_state": json.loads(ps),
-                                       "response": resp} for dial_id, ctx, rs, ps, resp, pred_dom, dom  in predictions_table}
-    else:
-        predictions_table = None
+
 
     for it, turn in enumerate(data_gen):
         if last_dial_id != turn['dialogue_id']:
             last_dial_id = turn['dialogue_id']
             n += 1
-            progress_bar.update(1)
             tn = 0
             if n > total:
                 break
@@ -378,29 +361,4 @@ if __name__ == "__main__":
             })
         #if predictions_table is None and n % 100 == 0:
         #    wandb.log({"examples": report_table})
-    progress_bar.close()
-    #if predictions_table is None:
-    #    wandb.log({"examples": report_table})
 
-    if args.dataset == 'multiwoz':
-        evaluator = MWEvaluator(bleu=True, success=True, richness=True, jga=True, dst=True)
-        eval_results = evaluator.evaluate(results)
-        print(eval_results)
-        for metric, values in eval_results.items():
-            if values is not None:
-                for k, v in values.items():
-                    wandb.log({f"MW_{metric}-{k.ljust(15)}": v})
-
-        evaluator = MWEvaluator(bleu=True, success=True, richness=True)
-        eval_results = evaluator.evaluate(results_wo_state)
-        for metric, values in eval_results.items():
-            if values is not None:
-                for k, v in values.items():
-                    wandb.log({f"MW_GT_{k.ljust(15)}": v})
-    else:
-        evaluator = SGDEvaluator(split=args.split)
-        metrics = {}
-        metrics.update(evaluator.get_bleu(results))
-        metrics.update(evaluator.get_eval(results))
-        for metric, val in metrics.items():
-            wandb.log({f"SGD_{metric}": val})

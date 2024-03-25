@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from model.bot.prompts import FewShotPrompt, SimpleTemplatePrompt
+from prompts import FewShotPrompt, SimpleTemplatePrompt
 
 
 sgd_domain_prompt = SimpleTemplatePrompt(template="""
@@ -233,8 +233,7 @@ state:""",
 Definition: You are an assistant that helps people to find a train connection.
 The customer needs to specify the departure and destination station, and the time of departure or arrival.
 There is also a number of trains in the database currently corresponding to the user's request.
-If you find a train, provide [arriveby], [leaveat] or [departure] values if asked.
-Provide real entities in the response, along with the values.
+If you find a train, provide [arriveby], [leaveat] or [departure] if asked.
 If booking, provide [reference] in the answer.
 ------
 {}{}
@@ -498,11 +497,9 @@ output:""",
 Definition: You are an assistant that helps people to find a train connection.
 The customer needs to specify the departure and destination station, and the time of departure or arrival.
 There is also a number of trains in the database currently corresponding to the user's request.
-If you find a train, provide [arriveby], [leaveat] or [departure] values if asked.
-Provide real entities in the response, Just provide the values.
-Keep your response short and concise.
+If you find a train, provide [arriveby], [leaveat] or [departure] if asked.
+Do not provide real entities in the response! Just provide entity name in brackets, like [duration] or [price].
 If booking, provide [reference] in the answer.
-VERY IMPORTANT: Answer only in response to the previous user statement, don't include information already given to user.
 input:{}
 Customer: {}
 state: {}
