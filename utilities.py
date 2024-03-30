@@ -12,7 +12,7 @@ import evaluate
 from nltk.tokenize import word_tokenize
 from langchain.vectorstores import VectorStore
 
-from model.bot.loaders import load_sgd
+from loaders import load_sgd
 
 
 def parse_state(state: str, default_domain: str = None) -> Dict[str, str]:

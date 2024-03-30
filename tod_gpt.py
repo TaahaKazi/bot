@@ -10,7 +10,7 @@ import logging
 import transformers
 import random
 
-from model.bot.model import (
+from modelling import (
     FewShotPromptedLLM,
     SimplePromptedLLM,
     FewShotOpenAILLM,
@@ -21,11 +21,11 @@ from model.bot.model import (
     ZeroShotAlpaca
 )
 
-from model.bot.delex import prepareSlotValuesIndependent, delexicalise, delexicaliseReferenceNumber
-from model.bot.definitions import MW_FEW_SHOT_DOMAIN_DEFINITIONS, MW_ZERO_SHOT_DOMAIN_DEFINITIONS, SGD_FEW_SHOT_DOMAIN_DEFINITIONS, SGD_ZERO_SHOT_DOMAIN_DEFINITIONS, multiwoz_domain_prompt, sgd_domain_prompt
+from delex import prepareSlotValuesIndependent, delexicalise, delexicaliseReferenceNumber
+from definitions import MW_FEW_SHOT_DOMAIN_DEFINITIONS, MW_ZERO_SHOT_DOMAIN_DEFINITIONS, SGD_FEW_SHOT_DOMAIN_DEFINITIONS, SGD_ZERO_SHOT_DOMAIN_DEFINITIONS, multiwoz_domain_prompt, sgd_domain_prompt
 
-from model.bot.database import MultiWOZDatabase
-from model.bot.utils import parse_state, ExampleRetriever, ExampleFormatter, print_gpu_utilization, SGDEvaluator
+from database import MultiWOZDatabase
+from utilities import parse_state, ExampleRetriever, ExampleFormatter, print_gpu_utilization, SGDEvaluator
 
 
 logger = logging.getLogger(__name__)
@@ -280,6 +280,7 @@ class TODSystem:
 
             # response, filled_prompt = "IDK", "-"
             response, filled_prompt = self.model(response_prompt, predict=True, **kwargs)
+            response = response.split("\n")[0]
         except:
             response = ''
 
@@ -297,13 +298,13 @@ if __name__ == "__main__":
     system = TODSystem(
         cache_dir="",
         model_name="gpt-3.5-turbo-instruct",
-        faiss_db="folder/user-agent/model/bot/multiwoz-context-db.vec",
+        faiss_db="multiwoz-context-db.vec",
         num_examples=2,
         dials_total=100,
-        database_path="folder/user-agent/model/bot/multiwoz_database",
+        database_path="multiwoz_database",
         dataset="multiwoz",
         context_size=3,
-        ontology="folder/user-agent/model/bot/ontology.json",
+        ontology="ontology.json",
         output="results",
         run_name="",
         use_gt_state=False,

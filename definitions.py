@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from model.bot.prompts import FewShotPrompt, SimpleTemplatePrompt
+from prompts import FewShotPrompt, SimpleTemplatePrompt
 
 
 sgd_domain_prompt = SimpleTemplatePrompt(template="""

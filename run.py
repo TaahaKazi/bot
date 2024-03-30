@@ -26,7 +26,7 @@ from delex import prepareSlotValuesIndependent, delexicalise, delexicaliseRefere
 from definitions import MW_FEW_SHOT_DOMAIN_DEFINITIONS, MW_ZERO_SHOT_DOMAIN_DEFINITIONS, SGD_FEW_SHOT_DOMAIN_DEFINITIONS, SGD_ZERO_SHOT_DOMAIN_DEFINITIONS, multiwoz_domain_prompt, sgd_domain_prompt
 
 from database import MultiWOZDatabase
-from utils import parse_state, ExampleRetriever, ExampleFormatter, print_gpu_utilization, SGDEvaluator
+from utilities import parse_state, ExampleRetriever, ExampleFormatter, print_gpu_utilization, SGDEvaluator
 from mwzeval.metrics import Evaluator as MWEvaluator
 
 

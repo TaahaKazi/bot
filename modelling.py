@@ -6,8 +6,7 @@ import json
 key_lookup = json.load(open('open_ai_key.json'))
 openai.api_key = key_lookup['key']
 from openai import OpenAI
-from model.bot.prompts import FewShotPrompt, SimpleTemplatePrompt
-# from prompts import FewShotPrompt, SimpleTemplatePrompt
+from prompts import FewShotPrompt, SimpleTemplatePrompt
 
 class SimplePromptedLLM:
     def __init__(self, model, tokenizer, type='seq2seq'):
